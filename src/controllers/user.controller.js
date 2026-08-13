@@ -40,7 +40,7 @@ const registerUser = asyncHandler(async (req, res) => {
     const { fullName, email, username, password } = req.body
     console.log("email: ", email)
 
-    //file json me nhi milegi, file k lie userroutes.js me multer import krvao, or middleware inject krdo with some tamjham in it 
+    // er import krlie usefile json me nhi milegi, file krroutes.js me multvao, or middleware inject krdo with some tamjham in it 
 
     // 2: 
     if (
@@ -100,12 +100,12 @@ const registerUser = asyncHandler(async (req, res) => {
 
     //8:
     if(!createdUser) {
-        throw new ApiError(500, "something went wrong while registering the user")
+        throw new ApiError(500, "Something went wrong while registering the user.")
     }
 
     //9:
     return res.status(201).json(
-        new ApiResponse(200, createdUser, "User registered successfully")
+        new ApiResponse(200, createdUser, "User registered successfully.")
     )
 })
 
@@ -131,7 +131,7 @@ const loginUser = asyncHandler(async (req, res) =>{
     }
 
     // console.log("USER", user)
-    console.log("type of user: ", typeof user)
+    // console.log("type of user: ", typeof user)
     const isPasswordValid = await user.isPasswordCorrect(password)
     if(!isPasswordValid) {
         throw new ApiError(401, "password incorrect")
@@ -163,7 +163,7 @@ const loginUser = asyncHandler(async (req, res) =>{
 })
 
 const logoutUser = asyncHandler(async(req, res)=>{
-    console.log("LOGOUT CONTROLLER CALLED")
+    // console.log("LOGOUT CONTROLLER CALLED")
     await User.findByIdAndUpdate(
         req.user._id,
         {
@@ -173,12 +173,12 @@ const logoutUser = asyncHandler(async(req, res)=>{
         },
         {new: true}
     )
-    console.log("WE FOUND THE USER")
+    // console.log("WE FOUND THE USER")
     const options = {
         httpOnly: true,
         secure: true
     }
-    console.log("SENDING THE RESPONSE")
+    // console.log("SENDING THE RESPONSE")
     return res
     .status(200)
     .clearCookie("accessToken", options)
@@ -233,7 +233,7 @@ const changeCurrentPassword = asyncHandler(async(req, res)=>{  //user already lo
     return res
     .status(200)
     .json(
-        new ApiResponse(200, {}, "Password changed")
+        new ApiResponse(200, {}, "Password changed.")
     )
 })
 
@@ -241,15 +241,15 @@ const getCurrentUser = asyncHandler(async(req, res)=>{
     return res
     .status(200)
     .json(
-        new ApiResponse(200, req.user, "current user fetched")
+        new ApiResponse(200, req.user, "Current user fetched.")
     )
 })
 
 const updateAccountDetails = asyncHandler(async(req, res)=>{ //file update krvani h to alag endpoint banao
     const {fullName, email} = req.body
 
-    if(!fullName || !email) {
-        throw new ApiError(400, "all fields are required")
+    if(!fullName && !email) {
+        throw new ApiError(400, "All fields are required.")
     }
 
     const user = await User.findByIdAndUpdate(
@@ -266,7 +266,7 @@ const updateAccountDetails = asyncHandler(async(req, res)=>{ //file update krvan
     return res
     .status(200)
     .json(
-        new ApiResponse(200, user, "account details updated")
+        new ApiResponse(200, user, "Account details updated.")
     )
 })//isme bhi verifyjwt lgaenge? lgana chahiye kyuki req.user use kia h, ha lgaya h hamne verifyjwttttt
 
@@ -321,7 +321,7 @@ const updateUserCoverImage = asyncHandler(async(req, res)=>{
 
 const getUserChannelPofile = asyncHandler(async(req, res)=>{
     const {username} = req.params
-    if(!username?.trim()) throw new ApiError(400, "username is missing");
+    if(!username?.trim()) throw new ApiError(400, "Username is missing.");
 
     const channel = await User.aggregate([
         {
@@ -373,13 +373,13 @@ const getUserChannelPofile = asyncHandler(async(req, res)=>{
     ])
 
     if(!channel?.length){
-        throw new ApiError(404, "channel does not exists")
+        throw new ApiError(404, "Channel does not exists.")
     }
 
-    return req
+    return res
     .status(200)
     .json(
-        new ApiResponse(200, channel[0], "user channel fetched")
+        new ApiResponse(200, channel[0], "User channel fetched.")
     )
 })//yha kuch esa kia h ki verifyjwt ki jroorat ho?
 
@@ -428,7 +428,7 @@ const getWatchHistory = asyncHandler(async(req, res)=>{
 
     return res
     .status(200)
-    .json(new ApiResponse(200, user[0].watchHistory, "watch history fetched"))
+    .json(new ApiResponse(200, user[0].watchHistory, "Catch history fetched."))
 })
 
 export { 
