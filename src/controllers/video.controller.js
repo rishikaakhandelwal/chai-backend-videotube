@@ -1,3 +1,4 @@
+import { isValidObjectId } from "mongoose";
 import { asyncHandler } from "../utils/asyncHandler.js";
 import {ApiResponse} from "../utils/ApiResponse.js"
 import { ApiError } from "../utils/ApiError.js";
@@ -17,7 +18,7 @@ const getAllVideos = asyncHandler(async(req, res)=>{
 
 const publishAVideo = asyncHandler(async(req, res)=>{
     const {title, description, isPublished} = req.body
-    if(!title || !description || !isPublished) throw new ApiError(400, "Please send complete details.");
+    if(!title || !description) throw new ApiError(400, "Please send complete details.");
 
     const thumbnailLocalPath = req.files?.thumbnail?.[0]?.path;
     const videoLocalPath = req.files?.videoFile?.[0]?.path;
@@ -48,6 +49,7 @@ const publishAVideo = asyncHandler(async(req, res)=>{
 
 const getVideoById = asyncHandler(async(req, res)=>{
     const {videoId} = req.params
+    if(!isValidObjectId(videoId)) throw new ApiError(400, "Invalid video id");
 
     const video = await Video.findById(videoId)
     if(!video) throw new ApiError(404, "Video not found!");
@@ -61,18 +63,20 @@ const getVideoById = asyncHandler(async(req, res)=>{
 
 const updateVideo = asyncHandler(async(req, res)=>{
     const {videoId} = req.params
+    if(!isValidObjectId(videoId)) throw new ApiError(400, "Invalid video id");
     // const {owner} = await Video.findById(videoId)
     // console.log(owner)
     // console.log(req.user._id)
     // if(owner!=req.user._id) throw new ApiError(401, "Unauthorised request.")
 
     const videoTocheck  = await Video.findById(videoId)
+    if(!videoTocheck) throw new ApiError(404, "Video not found!");
     if(!videoTocheck.owner.equals(req.user._id)) throw new ApiError(401, "Unauthorised request.");
 
     const {title, description, isPublished} = req.body
 
     const thumbnailLocalPath = req.file?.path
-    if(!thumbnailLocalPath && !title && !description && !isPublished) throw new ApiError(400, "Please send something to edit.");
+    if(!thumbnailLocalPath && !title && !description && isPublished===undefined) throw new ApiError(400, "Please send something to edit.");
 
     const thumbnail = await uploadOnCloudinary(thumbnailLocalPath)
     if(thumbnailLocalPath && !thumbnail) throw new ApiError(500, "Something went wrong while uploading the file.");
@@ -100,7 +104,9 @@ const updateVideo = asyncHandler(async(req, res)=>{
 
 const deleteVideo = asyncHandler(async(req, res)=>{
     const {videoId} = req.params
+    if(!isValidObjectId(videoId)) throw new ApiError(400, "Invalid video id");
     const videoTocheck  = await Video.findById(videoId)
+    if(!videoTocheck) throw new ApiError(404, "Video not found!");
     if(!videoTocheck.owner.equals(req.user._id)) throw new ApiError(401, "Unauthorised request.");
 
     const video = await Video.findByIdAndDelete(videoId)

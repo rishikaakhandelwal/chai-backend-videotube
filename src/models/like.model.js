@@ -19,4 +19,9 @@ const likeSchema = new mongoose.Schema({
     }
 }, {timestamps: true})
 
+likeSchema.index(
+    { video: 1, likedBy: 1 },
+    { unique: true }
+)
+
 export const Like = mongoose.model("Like", likeSchema)
