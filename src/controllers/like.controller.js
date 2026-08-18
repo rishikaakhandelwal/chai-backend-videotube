@@ -1,4 +1,4 @@
-// use isValidObjectId later
+import { isValidObjectId } from "mongoose"
 import { Like } from "../models/like.model.js"
 import { ApiError } from "../utils/ApiError.js"
 import { ApiResponse } from "../utils/ApiResponse.js"
@@ -6,6 +6,7 @@ import { asyncHandler } from "../utils/asyncHandler.js"
 
 const toggleVideoLike = asyncHandler(async (req, res) => {
     const { videoId } = req.params
+    if(!isValidObjectId(videoId)) throw new ApiError(400, "Invalid video id.")
     const userId = req.user._id
 
     const likeCheck = await Like.findOne({ video: videoId, likedBy: userId })
@@ -33,6 +34,7 @@ const toggleVideoLike = asyncHandler(async (req, res) => {
 
 const toggleCommentLike = asyncHandler(async (req, res) => {
     const { commentId } = req.params
+    if(!isValidObjectId(commentId)) throw new ApiError(400, "Invalid comment id.")
     const userId = req.user._id
 
     const likeCheck = await Like.findOne({ comment: commentId, likedBy: userId })
@@ -60,6 +62,7 @@ const toggleCommentLike = asyncHandler(async (req, res) => {
 
 const toggleTweetLike = asyncHandler(async (req, res) => {
     const { tweetId } = req.params
+    if(!isValidObjectId(tweetId)) throw new ApiError(400, "Invalid tweet id.")
     const userId = req.user._id
 
     const likeCheck = await Like.findOne({ tweet: tweetId, likedBy: userId })
@@ -86,15 +89,37 @@ const toggleTweetLike = asyncHandler(async (req, res) => {
 )
 
 const getLikedVideos = asyncHandler(async (req, res) => {
-    const userId = req.user._id
+    const userId = req.body._id
+    if(!userId) throw new ApiError(400, "Please login to see your liked videos.")
 
-    const likes = await Like.find({ owner: userId })
-
-    // console.log(tweets)
+    const likedVideos = await Like.aggregate([
+        {
+            $match: {
+                likedBy: userId,
+                video: {$exists: true}
+            }
+        },
+        {
+            $lookup:{
+                from: "videos",
+                localField: "video",
+                foreignField: "_id",
+                as: "video"
+            }
+        },
+        {
+            $unwind: "$video"
+        },
+        {
+            $replaceRoot: {newRoot: "$video"}
+        }
+    ])
 
     return res
-        .status(200)
-        .json(new ApiResponse(200, tweets, "Here are the tweets."))
+    .status(200)
+    .json(
+        new ApiResponse(200, likedVideos, "Liked videos fetched.")
+    )
 })
 
 export {
