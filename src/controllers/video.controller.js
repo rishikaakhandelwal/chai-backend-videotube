@@ -4,6 +4,7 @@ import {ApiResponse} from "../utils/ApiResponse.js"
 import { ApiError } from "../utils/ApiError.js";
 import uploadOnCloudinary from "../utils/cloudinary.js";
 import { Video } from "../models/video.model.js";
+import {User} from "../models/user.model.js"
 
 const getAllVideos = asyncHandler(async(req, res)=>{
     // await Video.find
@@ -51,8 +52,16 @@ const getVideoById = asyncHandler(async(req, res)=>{
     const {videoId} = req.params
     if(!isValidObjectId(videoId)) throw new ApiError(400, "Invalid video id");
 
-    const video = await Video.findById(videoId)
+    const video = await Video.findByIdAndUpdate(
+        videoId,
+        {
+            $inc: {views: 1}
+        },
+        {new: true}
+    )
     if(!video) throw new ApiError(404, "Video not found!");
+
+    await User.findByIdAndUpdate(req.user._id, {$addToSet: {watchHistory: videoId}})
 
     return res
     .status(200)
