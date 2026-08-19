@@ -89,7 +89,7 @@ const toggleTweetLike = asyncHandler(async (req, res) => {
 )
 
 const getLikedVideos = asyncHandler(async (req, res) => {
-    const userId = req.body._id
+    const userId = req.user._id
     if(!userId) throw new ApiError(400, "Please login to see your liked videos.")
 
     const likedVideos = await Like.aggregate([
